@@ -1,15 +1,18 @@
-import React, { Suspense } from 'react';
-import './App.css';
-import { CookiesProvider } from 'react-cookie';
-import Pages from './pages';
-require('dotenv').config()
+import React, { Suspense } from "react";
+import "./App.css";
+import { CookiesProvider } from "react-cookie";
+import Pages from "./pages";
+import AppContextProvider from "./contexts/AppContext";
+require("dotenv").config();
 
 function App() {
   return (
     <CookiesProvider>
-      <Suspense>
-        <Pages />
-      </Suspense>
+      <AppContextProvider>
+        <Suspense>
+          <Pages />
+        </Suspense>
+      </AppContextProvider>
     </CookiesProvider>
   );
 }
