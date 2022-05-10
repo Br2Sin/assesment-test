@@ -125,7 +125,7 @@ const Navbar = () => {
       <div className=" justify-between flex ">
         <Link to={"/"} className="flex gap-2 justify-center items-center">
           <img src="/assets/icon/logo.png" alt="app logo" className="w-16" />
-          <p className="text-2xl text-gray-400">Assessment Test</p>
+          <p className="text-xl font-bold text-gray-400 uppercase">Assessment Test</p>
         </Link>
         {context.connected && context.walletAddress ? (
           <div className="btn-connect flex items-center justify-between rounded-full px-8 py-1 border-app-black shadow-lg border-2 text-gray-400 font-bold hover:scale-105 transform bg-app-black-light border-r-2 border-b-2">
