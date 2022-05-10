@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { ActionButton } from "../../components/button";
 import Layout from "../../components/layout";
 import { LoadingSpinner } from "../../components/spinner";
+import { useAppContext } from "../../contexts/AppContext";
 import APIkit from "../../utils/axios";
 import BookItem, { typeBook } from "./book-item";
 import SectionBlock from "./section-block";
@@ -11,18 +12,20 @@ import SectionBlock from "./section-block";
 const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [books, setBooks] = useState<typeBook[]>([]);
+  const [autoFetch, setAutoFetch] = useState({ loading: false });
   const navigate = useNavigate();
+  const context = useAppContext();
   const handleManage = () => {
+    context.setEditingBook(null);
     navigate("/manage", {
       state: {
-        type: "edit",
-        id: 2,
+        type: "create",
       },
     });
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (auto: boolean) => {
+    if (!auto) setLoading(true);
     const serverUrl = process.env.REACT_APP_SERVER_URL;
     await APIkit({
       method: "get",
@@ -30,11 +33,11 @@ const HomePage = () => {
     })
       .then((res) => {
         setBooks(res.data);
-        setLoading(false);
+        if (!auto) setLoading(false);
       })
       .catch((error) => {
         console.log(error);
-        setLoading(false);
+        if (!auto) setLoading(false);
       });
   };
 
@@ -60,7 +63,7 @@ const HomePage = () => {
               text: "New Book deleted successfully.",
               icon: "success",
             });
-            fetchData();
+            fetchData(false);
           })
           .catch((error) => {
             console.log(error);
@@ -70,13 +73,21 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
+    const fetchHandler = setInterval(() => {
+      setAutoFetch({ loading: true });
+      fetchData(true);
+      setAutoFetch({ loading: false });
+    }, 60000);
+    return () => {
+      clearInterval(fetchHandler);
+    };
   }, []);
 
   return (
     <Layout title="Home Page">
       <div className="bg-app-black-dark bg-opacity-75 shadow-2xl rounded-md w-full min-h-screen z-10 flex flex-col relative">
-        {loading && <LoadingSpinner />}
+        {!autoFetch.loading && loading && <LoadingSpinner />}
         <div className="bg-app-black-light h-24 rounded-t-xl flex items-center justify-end px-8">
           <ActionButton onClick={handleManage}>Create</ActionButton>
         </div>

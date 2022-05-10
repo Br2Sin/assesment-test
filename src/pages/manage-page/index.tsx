@@ -6,6 +6,7 @@ import { ActionButton } from "../../components/button";
 import { Input } from "../../components/input";
 import Layout from "../../components/layout";
 import { LoadingSpinner } from "../../components/spinner";
+import { useAppContext } from "../../contexts/AppContext";
 import APIkit from "../../utils/axios";
 import { pinFileToIPFS } from "../../utils/pinata";
 
@@ -14,11 +15,15 @@ interface typeLocation {
   book?: any;
 }
 const ManagePage = () => {
-  const location = useLocation();
-  const state = location.state as typeLocation;
+  const context = useAppContext()
+  useEffect(()=>{
+    if(context.editingBook){
+      setPreview(pageState.cover_image)
+    }
+  },[])
 
   const coverImgRef = createRef<HTMLInputElement>();
-
+  const [pageState, setPageState] = useState(context.editingBook)
   const [uploading, setUpLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState<string>("");
@@ -62,7 +67,7 @@ const ManagePage = () => {
       });
       return;
     }
-    if (state.type !== "edit" || (state.type !== "edit" && !preview)) {
+    if (pageState === null || (pageState !== null && !preview)) {
       if (!coverImg) {
         Swal.fire({
           title: "Error!",
@@ -93,10 +98,10 @@ const ManagePage = () => {
       price: price,
     };
     setCreating(true);
-    if (state.type === "edit") {
+    if (pageState) {
       await APIkit({
         method: "put",
-        url: serverUrl + `/${state.book.id}`,
+        url: serverUrl + `/${pageState.id}`,
         data: data,
       })
         .then((res) => {
@@ -142,20 +147,21 @@ const ManagePage = () => {
     setEmail("");
     setPhone("");
     setAuthor("");
+    setPreview(null);
     setPrice(0);
   };
 
   useEffect(() => {
-    if (state.type === "edit") {
-      setTitle(state.book.title);
-      setDesc(state.book.description);
-      setAuthor(state.book.author);
-      setPrice(state.book.price);
-      setEmail(state.book.email);
-      setPhone(state.book.phone);
-      setPreview(state.book.cover_image);
+    if (pageState) {
+      setTitle(pageState.title);
+      setDesc(pageState.description);
+      setAuthor(pageState.author);
+      setPrice(pageState.price);
+      setEmail(pageState.email);
+      setPhone(pageState.phone);
+      setPreview(pageState.cover_image);
     }
-  }, []);
+  }, [pageState]);
 
   useEffect(() => {
     setEndpointUrl(undefined);
@@ -163,12 +169,12 @@ const ManagePage = () => {
       const objectUrl = URL.createObjectURL(new Blob(coverImg));
       setPreview(objectUrl);
     } else {
-      if (state.type !== "edit") {
+      if (!pageState) {
         setPreview(null);
       }
       setCoverImg(null);
     }
-  }, [coverImg, state.type]);
+  }, [coverImg]);
 
   useEffect(() => {
     setValid(
@@ -178,6 +184,8 @@ const ManagePage = () => {
         price > 0
     );
   }, [title, description, author, price]);
+
+  
 
   return (
     <Layout title="book manage">
@@ -278,7 +286,7 @@ const ManagePage = () => {
             disabled={!valid}
             className="sm:w-max w-full"
           >
-            {state.type === "edit" ? "Update Book" : "Create New Book"}
+            {pageState ? "Update Book" : "Create New Book"}
           </ActionButton>
           <Link to={"/"} className="sm:w-max w-full">
             <ActionButton

@@ -7,8 +7,9 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../../../contexts/AppContext";
 export interface typeBook {
   id: number;
   title: string;
@@ -23,6 +24,7 @@ export interface typeBook {
 const BookItem = (props: typeBook) => {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
+  const context = useAppContext();
   const {
     id,
     title,
@@ -36,14 +38,18 @@ const BookItem = (props: typeBook) => {
   } = props;
 
   const handleEdit = () => {
+    console.log("edit");
+    context.setEditingBook(props);
+    console.log("editing", context.editingBook)
+
     navigate("/manage", {
       state: {
         type: "edit",
-        id: id,
-        book: props,
       },
     });
   };
+
+
 
   return (
     <div

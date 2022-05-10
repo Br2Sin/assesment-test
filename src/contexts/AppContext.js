@@ -10,6 +10,7 @@ const AppContextProvider = ({ children }) => {
   const [web3, setWeb3] = useState(null)
   const [connected, setConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState(null)
+  const [editingBook, setEditingBook] = useState(null)
   return (
     <AppContext.Provider
       value={{
@@ -24,7 +25,9 @@ const AppContextProvider = ({ children }) => {
         connected,
         setConnected,
         walletAddress,
-        setWalletAddress
+        setWalletAddress,
+        editingBook,
+        setEditingBook
       }}
     >
       {children}
