@@ -13,7 +13,7 @@ interface typePinResult {
 
 export const pinFileToIPFS = async (imgFile: any) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
-  let result = <typePinResult>{};
+  let result = {} as typePinResult;
   let data = new FormData();
   data.append("file", imgFile[0]);
   await axios

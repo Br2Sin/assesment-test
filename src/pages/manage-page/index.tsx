@@ -1,6 +1,5 @@
-import axios from "axios";
 import { createRef, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ScaleLoader } from "react-spinners";
 import Swal from "sweetalert2";
 import { ActionButton } from "../../components/button";
@@ -10,9 +9,14 @@ import { LoadingSpinner } from "../../components/spinner";
 import APIkit from "../../utils/axios";
 import { pinFileToIPFS } from "../../utils/pinata";
 
+interface typeLocation {
+  type: string;
+  book?: any;
+}
 const ManagePage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const state = location.state as typeLocation;
+
   const coverImgRef = createRef<HTMLInputElement>();
 
   const [uploading, setUpLoading] = useState(false);
@@ -20,7 +24,6 @@ const ManagePage = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDesc] = useState<string>("");
   const [author, setAuthor] = useState<string>("");
-  const [publishDate, setPublishDate] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
@@ -59,22 +62,25 @@ const ManagePage = () => {
       });
       return;
     }
-    if (!coverImg) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please Select book cover image and upload it",
-        icon: "error",
-      });
-      return;
+    if (state.type !== "edit" || (state.type !== "edit" && !preview)) {
+      if (!coverImg) {
+        Swal.fire({
+          title: "Error!",
+          text: "Please Select book cover image and upload it",
+          icon: "error",
+        });
+        return;
+      }
+      if (!endpointUrl) {
+        Swal.fire({
+          title: "Error!",
+          text: "Please Upload book cover image",
+          icon: "error",
+        });
+        return;
+      }
     }
-    if (!endpointUrl) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please Upload book cover image",
-        icon: "error",
-      });
-      return;
-    }
+
     const serverUrl = process.env.REACT_APP_SERVER_URL;
 
     const data = {
@@ -82,30 +88,50 @@ const ManagePage = () => {
       description: description,
       email: email,
       phone: phone,
-      cover_image: endpointUrl,
+      cover_image: endpointUrl ? endpointUrl : preview,
       author: author,
       price: price,
     };
     setCreating(true);
-    const response = await APIkit({
-      method: "post",
-      url: serverUrl,
-      data: data,
-    })
-      .then((res) => {
-        console.log(res.data);
-        handleClear();
-        setCreating(false);
-        Swal.fire({
-          title: "Success!",
-          text: "New Book created successfully.",
-          icon: "success",
-        });
+    if (state.type === "edit") {
+      await APIkit({
+        method: "put",
+        url: serverUrl + `/${state.book.id}`,
+        data: data,
       })
-      .catch((error) => {
-        console.log(error);
-        setCreating(false);
-      });
+        .then((res) => {
+          handleClear();
+          setCreating(false);
+          Swal.fire({
+            title: "Success!",
+            text: "New Book created successfully.",
+            icon: "success",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          setCreating(false);
+        });
+    } else {
+      await APIkit({
+        method: "post",
+        url: serverUrl,
+        data: data,
+      })
+        .then((res) => {
+          handleClear();
+          setCreating(false);
+          Swal.fire({
+            title: "Success!",
+            text: "New Book created successfully.",
+            icon: "success",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          setCreating(false);
+        });
+    }
   };
 
   const handleClear = () => {
@@ -120,16 +146,29 @@ const ManagePage = () => {
   };
 
   useEffect(() => {
+    if (state.type === "edit") {
+      setTitle(state.book.title);
+      setDesc(state.book.description);
+      setAuthor(state.book.author);
+      setPrice(state.book.price);
+      setEmail(state.book.email);
+      setPhone(state.book.phone);
+      setPreview(state.book.cover_image);
+    }
+  }, []);
+
+  useEffect(() => {
     setEndpointUrl(undefined);
     if (coverImg && coverImg.length > 0) {
       const objectUrl = URL.createObjectURL(new Blob(coverImg));
       setPreview(objectUrl);
     } else {
-      setPreview(null);
+      if (state.type !== "edit") {
+        setPreview(null);
+      }
       setCoverImg(null);
     }
-    console.log(coverImg);
-  }, [coverImg]);
+  }, [coverImg, state.type]);
 
   useEffect(() => {
     setValid(
@@ -149,8 +188,8 @@ const ManagePage = () => {
               className="py-12 sm:py-0 rounded-lg bg-app-red flex items-center justify-center w-full h-full flex-col cursor-pointer"
               onClick={() => coverImgRef.current?.click()}
             >
-              {coverImg ? (
-                <img src={preview} alt="cover image" />
+              {preview ? (
+                <img src={preview} alt="cover" />
               ) : (
                 <div className="flex flex-col items-center justify-center">
                   <img
@@ -239,7 +278,7 @@ const ManagePage = () => {
             disabled={!valid}
             className="sm:w-max w-full"
           >
-            Create New Book
+            {state.type === "edit" ? "Update Book" : "Create New Book"}
           </ActionButton>
           <Link to={"/"} className="sm:w-max w-full">
             <ActionButton
