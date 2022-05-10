@@ -12,9 +12,13 @@ module.exports = {
             dark: '#1F2326'
           },
           red:{
-            DEFAULT: '#FF4656'
+            DEFAULT: '#FF4656',
+            dark: '#FF4626'
           }
         }
+      },
+      spacing: {
+        500: '1000px',
       }
     },
     screens: {

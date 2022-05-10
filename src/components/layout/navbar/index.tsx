@@ -128,9 +128,9 @@ const Navbar = () => {
           <p className="text-xl font-bold text-gray-400 uppercase">Assessment Test</p>
         </Link>
         {context.connected && context.walletAddress ? (
-          <div className="btn-connect flex items-center justify-between rounded-full px-8 py-1 border-app-black shadow-lg border-2 text-gray-400 font-bold hover:scale-105 transform bg-app-black-light border-r-2 border-b-2">
+          <div className="btn-connect flex items-center justify-between rounded-full px-4 sm:px-8 sm:py-1 border-app-black shadow-lg border-2 text-gray-400 font-bold hover:scale-105 transform bg-app-black-light border-r-2 border-b-2">
             <span className="mr-2">{sliceAddress(context.walletAddress)}</span>
-            <span className="cursor-pointer" onClick={handleConnectDisconnect}>
+            <span className="cursor-pointer flex-shrink-0" onClick={handleConnectDisconnect}>
               <img
                 src="/assets/icon/ico_close.png"
                 alt="close icon"
@@ -141,7 +141,7 @@ const Navbar = () => {
         ) : (
           <button
             id="btn-wallet-connect"
-            className="btn-connect cursor-pointer rounded-full px-8 py-1 border-app-black shadow-lg border-2 text-gray-400 font-bold hover:scale-105 transform bg-app-black-light border-r-2 border-b-2"
+            className="btn-connect cursor-pointer rounded-full px-4 sm:px-8 sm:py-1 border-app-black shadow-lg border-2 text-gray-400 font-bold hover:scale-105 transform bg-app-black-light border-r-2 border-b-2"
             onClick={handleConnectDisconnect}
           >
             <span className="text-secondary tracking-wider font-recoleta-bold">
